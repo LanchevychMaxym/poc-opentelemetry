@@ -1,4 +1,4 @@
-namespace OpenTelemetry.SampleProject
+namespace OpenTelemetry.Shared
 {
     public class WeatherForecast
     {
