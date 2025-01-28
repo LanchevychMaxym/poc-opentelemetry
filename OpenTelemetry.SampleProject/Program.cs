@@ -12,13 +12,12 @@ namespace OpenTelemetry.SampleProject
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            builder.Host.UseSerilog((context, configuration) =>
+                configuration.ReadFrom.Configuration(context.Configuration));
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddSerilog();
 
             builder.Services.AddScoped<IWeatherRepository, WeatherRepository>();
             builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
@@ -27,7 +26,6 @@ namespace OpenTelemetry.SampleProject
 
             app.UseSerilogRequestLogging();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

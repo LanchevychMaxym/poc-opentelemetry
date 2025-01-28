@@ -20,6 +20,7 @@ namespace OpenTelemetry.SampleProject.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
+            this.logger.LogInformation("Got Get request.");
             return this.forecastService.Get();
         }
     }
