@@ -1,13 +1,19 @@
 
 using OpenTelemetry.DataAccess;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Service;
 using OpenTelemetry.Shared;
+using OpenTelemetry.Trace;
 using Serilog;
 
 namespace OpenTelemetry.SampleProject
 {
     public class Program
     {
+        const string serviceName = "OpenTelemetry.SampleProject.API";
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +27,24 @@ namespace OpenTelemetry.SampleProject
 
             builder.Services.AddScoped<IWeatherRepository, WeatherRepository>();
             builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
+
+            
+            builder.Logging.AddOpenTelemetry(options =>
+            {
+                options
+                    .SetResourceBuilder(
+                        ResourceBuilder.CreateDefault()
+                            .AddService(serviceName))
+                    .AddConsoleExporter();
+            });
+            builder.Services.AddOpenTelemetry()
+                  .ConfigureResource(resource => resource.AddService(serviceName))
+                  .WithTracing(tracing => tracing
+                      .AddAspNetCoreInstrumentation()
+                      .AddConsoleExporter())
+                  .WithMetrics(metrics => metrics
+                      .AddAspNetCoreInstrumentation()
+                      .AddConsoleExporter());
 
             var app = builder.Build();
 
