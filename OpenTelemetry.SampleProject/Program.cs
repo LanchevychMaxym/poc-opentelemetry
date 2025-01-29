@@ -35,7 +35,9 @@ namespace OpenTelemetry.SampleProject
                 options
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
-                            .AddService(serviceName))
+                            .AddService(serviceName)
+                            .AddService(WeatherRepository.ActivitySourceName)
+                            .AddService(WeatherForecastService.ActivitySourceName))
                     .AddConsoleExporter()
                     .AddOtlpExporter(otlpOptions =>
                     {
@@ -45,7 +47,10 @@ namespace OpenTelemetry.SampleProject
                     });
             });
             builder.Services.AddOpenTelemetry()
-                  .ConfigureResource(resource => resource.AddService(serviceName))
+                  .ConfigureResource(resource => resource
+                    .AddService(serviceName)
+                    .AddService(WeatherRepository.ActivitySourceName)
+                    .AddService(WeatherForecastService.ActivitySourceName))
                   .WithTracing(tracing => tracing
                       .AddAspNetCoreInstrumentation()
                       .AddConsoleExporter()
