@@ -6,6 +6,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Service;
 using OpenTelemetry.Shared;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Exporter;
 using Serilog;
 
 namespace OpenTelemetry.SampleProject
@@ -35,16 +36,34 @@ namespace OpenTelemetry.SampleProject
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
                             .AddService(serviceName))
-                    .AddConsoleExporter();
+                    .AddConsoleExporter()
+                    .AddOtlpExporter(otlpOptions =>
+                    {
+                        otlpOptions.Endpoint = new Uri("http://localhost:4317");
+
+                        otlpOptions.Protocol = OtlpExportProtocol.Grpc;
+                    });
             });
             builder.Services.AddOpenTelemetry()
                   .ConfigureResource(resource => resource.AddService(serviceName))
                   .WithTracing(tracing => tracing
                       .AddAspNetCoreInstrumentation()
-                      .AddConsoleExporter())
+                      .AddConsoleExporter()
+                      .AddOtlpExporter(otlpOptions =>
+                      {
+                          otlpOptions.Endpoint = new Uri("http://localhost:4317");
+
+                          otlpOptions.Protocol = OtlpExportProtocol.Grpc;
+                      }))
                   .WithMetrics(metrics => metrics
                       .AddAspNetCoreInstrumentation()
-                      .AddConsoleExporter());
+                      .AddConsoleExporter()
+                      .AddOtlpExporter(otlpOptions =>
+                      {
+                          otlpOptions.Endpoint = new Uri("http://localhost:4317");
+
+                          otlpOptions.Protocol = OtlpExportProtocol.Grpc;
+                      }));
 
             var app = builder.Build();
 

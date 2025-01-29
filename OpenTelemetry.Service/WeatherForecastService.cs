@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenTelemetry.Shared;
+using OpenTelemetry.Shared.Traceability;
 
 namespace OpenTelemetry.Service
 {
-    public class WeatherForecastService : IWeatherForecastService
+    public class WeatherForecastService : Traceable<WeatherForecastService>, IWeatherForecastService
     {
         private readonly IWeatherRepository weatherRepository;
         private readonly ILogger<WeatherForecastService> logger;
@@ -14,11 +15,14 @@ namespace OpenTelemetry.Service
         }
         public IEnumerable<WeatherForecast> Get()
         {
-            this.logger.LogInformation("Getting forecast.");
-            var forecast = this.weatherRepository.Get();
-            // structured logging
-            this.logger.LogInformation("Found: {@forecast}", forecast);
-            return forecast;
+            return this.TraceAction(() =>
+            {
+                this.logger.LogInformation("Getting forecast.");
+                var forecast = this.weatherRepository.Get();
+                // structured logging
+                this.logger.LogInformation("Found: {@forecast}", forecast);
+                return forecast;
+            });
         }
     }
 }

@@ -5,8 +5,8 @@ namespace OpenTelemetry.Shared.Traceability
     public class Traceable<TType>
         where TType : class
     {
-        internal const string ActivitySourceName = nameof(TType);
-        public static ActivitySource ActivitySource { get; } = new ActivitySource(ActivitySourceName);
+        internal static string ActivitySourceName = typeof(TType).Name;
+        public static ActivitySource ActivitySource { get; } = new ActivitySource(ActivitySourceName, "1.0.0");
 
         public TResult TraceAction<TResult>(Func<TResult> action)
         {
@@ -24,6 +24,10 @@ namespace OpenTelemetry.Shared.Traceability
                     activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                     throw;
                 }
+                finally
+                {
+                    activity?.Stop();
+                }
 
                 return result;
             }
@@ -40,6 +44,10 @@ namespace OpenTelemetry.Shared.Traceability
                 {
                     activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                     throw;
+                }
+                finally
+                {
+                    activity?.Stop();
                 }
             }
         }
