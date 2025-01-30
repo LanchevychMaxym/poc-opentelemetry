@@ -18,10 +18,11 @@ namespace OpenTelemetry.Service
             return this.TraceAction(() =>
             {
                 this.logger.LogInformation("Getting forecast.");
-                var forecast = this.weatherRepository.Get();
+                var forecasts = this.weatherRepository.Get();
                 // structured logging
-                this.logger.LogInformation("Found: {@forecast}", forecast);
-                return forecast;
+                this.logger.LogInformation("Found: {@forecasts}", forecasts);
+                this.logger.LogInformation("First forecast: {@forecast}", forecasts.First());
+                return forecasts;
             });
         }
     }

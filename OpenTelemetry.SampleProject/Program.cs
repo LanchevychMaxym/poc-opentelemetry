@@ -29,15 +29,16 @@ namespace OpenTelemetry.SampleProject
             builder.Services.AddScoped<IWeatherRepository, WeatherRepository>();
             builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 
-            
-            builder.Logging.AddOpenTelemetry(options =>
-            {
-                options
-                    .SetResourceBuilder(
-                        ResourceBuilder.CreateDefault()
+            var resourceBuilder = ResourceBuilder.CreateDefault()
                             .AddService(serviceName)
                             .AddService(WeatherRepository.ActivitySourceName)
-                            .AddService(WeatherForecastService.ActivitySourceName))
+                            .AddService(WeatherForecastService.ActivitySourceName);
+
+            builder.Logging.AddOpenTelemetry(options =>
+            {
+                options.IncludeScopes = true;
+                options
+                    .SetResourceBuilder(resourceBuilder)
                     .AddConsoleExporter()
                     .AddOtlpExporter(otlpOptions =>
                     {
@@ -47,11 +48,8 @@ namespace OpenTelemetry.SampleProject
                     });
             });
             builder.Services.AddOpenTelemetry()
-                  .ConfigureResource(resource => resource
-                    .AddService(serviceName)
-                    .AddService(WeatherRepository.ActivitySourceName)
-                    .AddService(WeatherForecastService.ActivitySourceName))
                   .WithTracing(tracing => tracing
+                      .SetResourceBuilder(resourceBuilder)
                       .AddAspNetCoreInstrumentation()
                       .AddConsoleExporter()
                       .AddOtlpExporter(otlpOptions =>
@@ -61,6 +59,7 @@ namespace OpenTelemetry.SampleProject
                           otlpOptions.Protocol = OtlpExportProtocol.Grpc;
                       }))
                   .WithMetrics(metrics => metrics
+                       .SetResourceBuilder(resourceBuilder)
                       .AddAspNetCoreInstrumentation()
                       .AddConsoleExporter()
                       .AddOtlpExporter(otlpOptions =>
