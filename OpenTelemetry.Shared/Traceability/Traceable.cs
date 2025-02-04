@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace OpenTelemetry.Shared.Traceability
 {
@@ -6,18 +7,19 @@ namespace OpenTelemetry.Shared.Traceability
         where TType : class
     {
         public static string ActivitySourceName = typeof(TType).Name;
-        public static ActivitySource ActivitySource { get; } = new ActivitySource(ActivitySourceName, "1.0.0");
+        public static ActivitySource ActivitySource { get; } = new ActivitySource(ActivitySourceName);
 
-        public TResult TraceAction<TResult>(Func<TResult> action)
+        public TResult TraceAction<TResult>(Func<TResult> action, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
-            using (var activity = ActivitySource.StartActivity(action.Method.Name))
+            string callerClassName = Path.GetFileNameWithoutExtension(callerFilePath);
+            using (var activity = ActivitySource.StartActivity($"{callerClassName}.{callerName}"))
             {
                 TResult result;
 
                 try
                 {
                     result = action();
-                    activity?.SetTag($"{action.Method.Name}.Result", result);
+                    activity?.SetTag($"{callerName}.Result", result?.ToString());
                 }
                 catch (Exception ex)
                 {
@@ -32,9 +34,10 @@ namespace OpenTelemetry.Shared.Traceability
                 return result;
             }
         }
-        public void TraceAction(Action action)
+        public void TraceAction(Action action, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
-            using (var activity = ActivitySource.StartActivity(action.Method.Name))
+            string callerClassName = Path.GetFileNameWithoutExtension(callerFilePath);
+            using (var activity = ActivitySource.StartActivity($"{callerClassName}.{callerName}"))
             {
                 try
                 {

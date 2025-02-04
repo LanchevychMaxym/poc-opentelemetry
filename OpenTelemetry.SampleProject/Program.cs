@@ -1,4 +1,3 @@
-
 using OpenTelemetry.DataAccess;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -14,7 +13,6 @@ namespace OpenTelemetry.SampleProject
     public class Program
     {
         const string serviceName = "OpenTelemetry.SampleProject.API";
-
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -30,9 +28,7 @@ namespace OpenTelemetry.SampleProject
             builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 
             var resourceBuilder = ResourceBuilder.CreateDefault()
-                            .AddService(serviceName)
-                            .AddService(WeatherRepository.ActivitySourceName)
-                            .AddService(WeatherForecastService.ActivitySourceName);
+                            .AddService(serviceName);
 
             builder.Logging.AddOpenTelemetry(options =>
             {
@@ -50,6 +46,9 @@ namespace OpenTelemetry.SampleProject
             builder.Services.AddOpenTelemetry()
                   .WithTracing(tracing => tracing
                       .SetResourceBuilder(resourceBuilder)
+                      .UseSources(
+                            WeatherRepository.ActivitySourceName,
+                            WeatherForecastService.ActivitySourceName)
                       .AddAspNetCoreInstrumentation()
                       .AddConsoleExporter()
                       .AddOtlpExporter(otlpOptions =>
@@ -59,7 +58,7 @@ namespace OpenTelemetry.SampleProject
                           otlpOptions.Protocol = OtlpExportProtocol.Grpc;
                       }))
                   .WithMetrics(metrics => metrics
-                       .SetResourceBuilder(resourceBuilder)
+                      .SetResourceBuilder(resourceBuilder)
                       .AddAspNetCoreInstrumentation()
                       .AddConsoleExporter()
                       .AddOtlpExporter(otlpOptions =>
